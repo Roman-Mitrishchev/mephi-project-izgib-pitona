@@ -19,8 +19,10 @@ SNAKE_COLOR = (0, 255, 0)
 
 SPEED = 7
 
-screen = None
-clock = None
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Изгиб питона')
+clock = pygame.time.Clock()
 
 
 class GameObject:
@@ -151,12 +153,6 @@ def handle_keys(game_object):
 
 def main():
     """Инициализировать игру и запустить основной игровой цикл."""
-    global screen, clock
-
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Изгиб питона')
-    clock = pygame.time.Clock()
 
     snake = Snake()
     apple = Apple()
