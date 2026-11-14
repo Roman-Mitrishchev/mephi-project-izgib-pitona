@@ -150,7 +150,6 @@ def handle_keys(game_object):
         elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
             game_object.next_direction = RIGHT
 
-
 def main():
     """Инициализировать игру и запустить основной игровой цикл."""
 
