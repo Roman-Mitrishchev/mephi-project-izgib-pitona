@@ -8,8 +8,8 @@
     main: функция инициализации и запуска игры.
 """
 
-from random import choice
 import sys
+from random import choice
 
 import pygame as pg
 
@@ -43,7 +43,7 @@ BORDER_COLOR = CYAN
 APPLE_COLOR = RED
 SNAKE_COLOR = GREEN
 
-SPEED = 7
+SPEED = 20
 
 screen = None
 clock = None
@@ -71,7 +71,7 @@ class GameObject:
     ):
         """Инициализировать объект с заданными позицией и цветом.
 
-        Атрибуты:
+        Args:
             position: Координаты объекта. По умолчанию — центр поля.
             body_color: Цвет объекта. По умолчанию не задан.
         """
@@ -90,7 +90,7 @@ class GameObject:
         необходимости можно передать другой цвет или отключить границу.
         Отрисовка выполняется непосредственно на игровой поверхности screen.
 
-        Атрибуты:
+        Args:
             position: Координаты верхнего левого угла ячейки.
             body_color: Цвет заливки. По умолчанию используется цвет объекта.
             border_color: Цвет границы. Значение None отключает границу.
@@ -109,7 +109,7 @@ class GameObject:
         реализации вызывает NotImplementedError с именем класса, в котором
         метод не был переопределён.
 
-        Исключения:
+        Raises:
             NotImplementedError: Если дочерний класс не переопределил draw().
         """
         raise NotImplementedError(
@@ -134,11 +134,11 @@ class Apple(GameObject):
     def __init__(self, body_color=APPLE_COLOR, occupied_positions=None):
         """Создать яблоко с заданным цветом и свободной позицией.
 
-        Атрибуты:
+        Args:
             body_color: Цвет яблока. По умолчанию используется APPLE_COLOR.
             occupied_positions: Занятые клетки. По умолчанию список пуст.
 
-        Исключения:
+        Raises:
             RuntimeError: Если на игровом поле нет свободной клетки.
         """
         super().__init__(position=None, body_color=body_color)
@@ -152,11 +152,11 @@ class Apple(GameObject):
         выбирается только тогда, когда текущая клетка занята змейкой. Метод
         обновляет атрибут self.position.
 
-        Атрибуты:
+        Args:
             occupied_positions: Координаты занятых клеток. По умолчанию
                 список занятых клеток пуст.
 
-        Исключения:
+        Raises:
             RuntimeError: Если на игровом поле не осталось свободных клеток.
         """
         occupied_positions = set(occupied_positions or [])
@@ -210,7 +210,7 @@ class Snake(GameObject):
     def __init__(self, body_color=SNAKE_COLOR):
         """Создать змейку с заданным цветом и начальным состоянием.
 
-        Атрибуты:
+        Args:
             body_color: Цвет змейки. По умолчанию используется SNAKE_COLOR.
         """
         super().__init__(position=None, body_color=body_color)
@@ -273,7 +273,7 @@ class Snake(GameObject):
     def get_head_position(self):
         """Вернуть координаты головы змейки.
 
-        Возвращает:
+        Returns:
             Кортеж с координатами верхнего левого угла головного сегмента.
         """
         return self.positions[0]
@@ -297,10 +297,10 @@ def handle_keys(game_object):
     При нажатии клавиш-стрелок обновляет next_direction переданного объекта.
     При закрытии окна или нажатии Esc завершает работу Pygame и программы.
 
-    Атрибуты:
+    Args:
         game_object: Игровой объект, направление которого нужно изменить.
 
-    Исключения:
+    Raises:
         SystemExit: При закрытии окна или нажатии клавиши Esc.
     """
     for event in pg.event.get():
@@ -357,7 +357,6 @@ def main():
             except RuntimeError:
                 snake.draw()
                 pg.display.update()
-                print('Поздравляем! Вы заполнили всё игровое поле.')
                 pg.quit()
                 return
 
