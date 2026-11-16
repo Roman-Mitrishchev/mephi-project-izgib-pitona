@@ -1,113 +1,127 @@
-                self.last,
-                body_color=BOARD_BACKGROUND_COLOR,
-                border_color=None,
-            )
+"""Реализовать классическую игру «Змейка» с помощью Pygame.
 
-        self.draw_cell(self.get_head_position())
+Модуль содержит:
+    GameObject: базовый класс игровых объектов.
+    Apple: класс яблока, размещаемого на игровом поле.
+    Snake: класс змейки и логика её движения.
+    handle_keys: обработчик событий клавиатуры и окна.
+    main: функция инициализации и запуска игры.
+"""
 
-    def grow(self):
-        """Увеличить длину змейки и восстановить удалённый сегмент хвоста.
+import sys
+from random import choice
 
-        Увеличивает атрибут length. Если при последнем перемещении хвостовой
-        сегмент был удалён, добавляет его обратно в positions.
-        """
-        self.length += 1
-        if self.last is not None:
-            self.positions.append(self.last)
-            self.last = None
+import pygame as pg
 
-    def get_head_position(self):
-        """Вернуть координаты головы змейки.
+SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
+INITIAL_POSITION = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+GRID_SIZE = 20
+GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
+GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 
-        Результат:
-            Кортеж с координатами верхнего левого угла головного сегмента.
-        """
-        return self.positions[0]
+UP = (0, -1)
+DOWN = (0, 1)
+LEFT = (-1, 0)
+RIGHT = (1, 0)
 
-    def reset(self):
-        """Сбросить змейку в исходное состояние.
+TURNS = {
+    pg.K_UP: (UP, DOWN),
+    pg.K_DOWN: (DOWN, UP),
+    pg.K_LEFT: (LEFT, RIGHT),
+    pg.K_RIGHT: (RIGHT, LEFT),
+}
 
-        Устанавливает начальную длину, позицию, направление движения и
-        очищает сохранённые данные о следующем направлении и хвосте.
-        """
-        self.length = 1
-        self.positions = [INITIAL_POSITION]
-        self.direction = RIGHT
-        self.next_direction = None
-        self.last = None
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+PURPLE = (160, 32, 240)
+CYAN = (93, 216, 228)
+
+BOARD_BACKGROUND_COLOR = BLACK
+BORDER_COLOR = CYAN
+APPLE_COLOR = RED
+SNAKE_COLOR = GREEN
+
+SPEED = 20
+
+pg.init()
+screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pg.display.set_caption('Змейка')
+clock = pg.time.Clock()
 
 
-def handle_keys(game_object):
-    """Обработать события окна и клавиатуры.
+class GameObject:
+    """Представить базовый класс игрового объекта.
 
-    При нажатии клавиш-стрелок обновляет next_direction переданного объекта.
-    При закрытии окна или нажатии Esc завершает работу Pygame и программы.
+    Атрибуты:
+        position: Координаты объекта на игровом поле.
+        body_color: Цвет объекта.
 
-    Аргументы:
-        game_object: Игровой объект, направление которого нужно изменить.
+    Методы:
+        draw_cell: Отрисовать одну ячейку игрового поля.
+        draw: Определить интерфейс отрисовки объекта.
 
-    Исключения:
-        SystemExit: При закрытии окна или нажатии клавиши Esc.
+    Интерфейс для дочерних классов:
+        Дочерние классы должны переопределять метод draw().
     """
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            pg.quit()
-            sys.exit()
 
-        if event.type != pg.KEYDOWN:
-            continue
+    def __init__(
+        self,
+        position=INITIAL_POSITION,
+        body_color=None,
+    ):
+        """Инициализировать объект с заданными позицией и цветом.
 
-        if event.key == pg.K_ESCAPE:
-            pg.quit()
-            sys.exit()
+        Аргументы:
+            position: Координаты объекта. По умолчанию — центр поля.
+            body_color: Цвет объекта. По умолчанию не задан.
+        """
+        self.position = position
+        self.body_color = body_color
 
-        if event.key in TURNS:
-            new_direction, opposite = TURNS[event.key]
-            if game_object.direction != opposite:
-                game_object.next_direction = new_direction
+    def draw_cell(
+        self,
+        position,
+        body_color=None,
+        border_color=BORDER_COLOR,
+    ):
+        """Отрисовать одну ячейку игрового поля.
 
+        Цвет заливки по умолчанию берётся из атрибута объекта. При
+        необходимости можно передать другой цвет или отключить границу.
+        Отрисовка выполняется непосредственно на игровой поверхности screen.
 
-def main():
-    """Запустить основной игровой цикл.
+        Аргументы:
+            position: Координаты верхнего левого угла ячейки.
+            body_color: Цвет заливки. По умолчанию используется цвет объекта.
+            border_color: Цвет границы. Значение None отключает границу.
+        """
+        color = self.body_color if body_color is None else body_color
+        cell = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
+        pg.draw.rect(screen, color, cell)
 
-    Создаёт змейку и яблоко, затем обрабатывает события, обновляет
-    состояние игровых объектов и перерисовывает игровое поле.
-    Игровые экран и часы создаются при загрузке модуля.
-    """
-    snake = Snake()
-    apple = Apple(occupied_positions=snake.positions)
+        if border_color is not None:
+            pg.draw.rect(screen, border_color, cell, 1)
 
-    screen.fill(BOARD_BACKGROUND_COLOR)
-    snake.draw()
-    apple.draw()
-    pg.display.update()
+    def draw(self):
+        """Определить обязательный метод отрисовки игрового объекта.
 
-    while True:
-        clock.tick(SPEED)
+        Дочерние классы должны переопределять этот метод. Вызов базовой
+        реализации вызывает NotImplementedError с именем класса, в котором
+        метод не был переопределён.
 
-        handle_keys(snake)
-        snake.update_direction()
-        snake.move()
-
-        if snake.get_head_position() == apple.position:
-            snake.grow()
-            try:
-                apple.randomize_position(snake.positions)
-            except RuntimeError:
-                snake.draw()
-                pg.display.update()
-                pg.quit()
-                return
-
-        elif snake.get_head_position() in snake.positions[4:]:
-            snake.reset()
-            apple.randomize_position(snake.positions)
-            screen.fill(BOARD_BACKGROUND_COLOR)
-
-        snake.draw()
-        apple.draw()
-        pg.display.update()
+        Исключения:
+            NotImplementedError: Если дочерний класс не переопределил draw().
+        """
+        raise NotImplementedError(
+            f'Метод draw() не переопределён в классе {type(self).__name__}.'
+        )
 
 
-if __name__ == '__main__':
-    main()
+class Apple(GameObject):
+    """Представить яблоко, которое появляется в свободной клетке поля.
+
+    Атрибуты:
+        position: Координаты яблока на игровом поле.
+        body_color: Цвет яблока.
